@@ -1,19 +1,11 @@
 const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const path = require('path');
 
-// Register a clean font (optional - falls back to system default if missing)
-try {
-  GlobalFonts.registerFromPath(
-    path.join(process.cwd(), 'fonts', 'Inter-Bold.ttf'),
-    'InterBold'
-  );
-  GlobalFonts.registerFromPath(
-    path.join(process.cwd(), 'fonts', 'Inter-Regular.ttf'),
-    'InterRegular'
-  );
-} catch (e) {
-  // fonts are optional, canvas will fall back to default
-}
+// Bundled fonts are required because serverless environments (Vercel/AWS Lambda)
+// usually ship with NO fonts installed at all - without registering our own,
+// canvas text rendering silently draws nothing.
+GlobalFonts.registerFromPath(path.join(__dirname, '..', 'fonts', 'DejaVuSans-Bold.ttf'), 'QueueCardBold');
+GlobalFonts.registerFromPath(path.join(__dirname, '..', 'fonts', 'DejaVuSans.ttf'), 'QueueCardRegular');
 
 const FALLBACK_THUMB =
   'https://via.placeholder.com/600x600/222222/666666?text=No+Image';
@@ -198,13 +190,12 @@ module.exports = async (req, res) => {
       ctx.restore();
 
       ctx.fillStyle = '#fff';
-      ctx.font = `${isCenter ? 19 : 15} ${'InterBold'}`;
-      ctx.font = `${(isCenter ? 19 : 15) * SCALE}px InterBold, sans-serif`;
+      ctx.font = `${(isCenter ? 19 : 15) * SCALE}px QueueCardBold`;
       const title = truncate(ctx, items[i].name || 'Unknown', cw - 24 * SCALE);
       ctx.fillText(title, 16 * SCALE, ch * 0.84);
 
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = `${(isCenter ? 14 : 11) * SCALE}px InterRegular, sans-serif`;
+      ctx.font = `${(isCenter ? 14 : 11) * SCALE}px QueueCardRegular`;
       const sub =
         (typeof items[i].uploader === 'string' ? items[i].uploader : items[i].uploader?.name) ||
         'Unknown';
@@ -256,12 +247,12 @@ module.exports = async (req, res) => {
 
     // title + uploader text
     ctx.fillStyle = '#fff';
-    ctx.font = `${20 * SCALE}px InterBold, sans-serif`;
+    ctx.font = `${20 * SCALE}px QueueCardBold`;
     const textX = thumbX + thumbSize + 22 * SCALE;
     const textMaxW = controlsCenterX - gap * 1.8 - textX;
     ctx.fillText(truncate(ctx, currentName, textMaxW), textX, barY + barH * 0.42);
     ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    ctx.font = `${15 * SCALE}px InterRegular, sans-serif`;
+    ctx.font = `${15 * SCALE}px QueueCardRegular`;
     ctx.fillText(truncate(ctx, currentUploader, textMaxW), textX, barY + barH * 0.68);
 
     // progress bar under the whole pill
@@ -276,7 +267,7 @@ module.exports = async (req, res) => {
     ctx.fill();
 
     ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.font = `${14 * SCALE}px InterRegular, sans-serif`;
+    ctx.font = `${14 * SCALE}px QueueCardRegular`;
     ctx.fillText(currentTime, progBarX, progBarY + 28 * SCALE);
     const durW = ctx.measureText(duration).width;
     ctx.fillText(duration, progBarX + progBarW - durW, progBarY + 28 * SCALE);

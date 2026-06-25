@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/queue", "destination": "/api/queue" }
+  ]
+}
